@@ -4,7 +4,7 @@ import "./index.css";
 import Root from "./routes/root";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ErrorPage from "./error-page";
-import Menu from "./routes/menu";
+import Menu from "./routes/section";
 import { ChakraProvider } from "@chakra-ui/react";
 import {
   ApolloClient,
@@ -39,7 +39,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "/menus/:menuId",
+        path: "/sections/:sectionId",
         element: <Menu />,
       },
     ],

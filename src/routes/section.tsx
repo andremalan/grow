@@ -1,6 +1,15 @@
 import { gql, useQuery } from "@apollo/client";
 import { useParams } from "react-router-dom";
-import { Button, Select, Text, useDisclosure } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Card,
+  CardBody,
+  Heading,
+  Select,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
 import {
   Modal,
   ModalOverlay,
@@ -9,26 +18,23 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  SimpleGrid,
 } from "@chakra-ui/react";
 
-const GET_MENU = gql`
-  query GetMenu($menuId: ID!) {
-    menu(identifier: $menuId) {
+const GET_SECTION = gql`
+  query GetSection($sectionId: ID!) {
+    section(identifier: $sectionId) {
       identifier
       label
-      state
-      sections {
+      items {
         label
         identifier
-        items {
+        description
+        modifierGroups {
           label
-          identifier
-          modifierGroups {
-            label
-            modifiers {
-              priceOverride
-              displayOrder
-            }
+          modifiers {
+            priceOverride
+            displayOrder
           }
         }
       }
@@ -41,15 +47,15 @@ type Modifier = {
   displayOrder: number;
 };
 
-type ModifierGroup = {
-  label: string;
-  modifiers: Modifier[];
-};
-
 type Item = {
   label: string;
   identifier: string;
+  description: string;
   modifierGroups: ModifierGroup[];
+};
+type ModifierGroup = {
+  label: string;
+  modifiers: Modifier[];
 };
 
 type Section = {
@@ -58,18 +64,16 @@ type Section = {
   items: Item[];
 };
 
-type Menu = {
-  identifier: string;
-  label: string;
-  state: string;
-  sections: Section[];
-};
-
-const BasicModal: React.FC<{ item: Item }> = ({ item }) => {
+const BasicModal: React.FC<{ item: Item; children: React.ReactNode }> = ({
+  item,
+  children,
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button onClick={onOpen}>Open Modal</Button>
+      <Box cursor="pointer" onClick={onOpen}>
+        {children}
+      </Box>
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
@@ -77,7 +81,7 @@ const BasicModal: React.FC<{ item: Item }> = ({ item }) => {
           <ModalHeader>{item.label}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text>{item.label}</Text>
+            <Text>{item.description}</Text>
             <ul>
               {item.modifierGroups.map((group) => (
                 <li key={group.label}>
@@ -115,33 +119,31 @@ const ModifierGroup: React.FC<{ modifierGroup: ModifierGroup }> = ({
     </div>
   );
 };
-export default function Menu() {
-  const { menuId } = useParams();
-  const { loading, error, data } = useQuery(GET_MENU, {
-    variables: { menuId },
+export default function Section() {
+  const { sectionId } = useParams();
+  const { loading, error, data } = useQuery(GET_SECTION, {
+    variables: { sectionId },
   });
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
 
   return (
-    <div id="menu">
-      <Text>{data.menu.label}</Text>
-      <Text>Sections</Text>
-      <ul>
-        {data.menu.sections.map((section: Section) => (
-          <li key={section.identifier}>
-            <h2>{section.label}</h2>
-            <ul>
-              {section.items.map((item: Item) => (
-                <li key={item.identifier}>
-                  <h3>{item.label}</h3>
-                  <BasicModal item={item} />
-                </li>
-              ))}
-            </ul>
-          </li>
+    <div id="section">
+      <Text>{data.section.label}</Text>
+      <SimpleGrid minChildWidth="120px" spacing="40px">
+        {data.section.items.map((item: Item) => (
+          <BasicModal key={item.identifier} item={item}>
+            <Card height="180px">
+              <CardBody>
+                <Heading as="h3" size="md">
+                  {item.label}
+                </Heading>
+                <Text noOfLines={1}>{item.description}</Text>
+              </CardBody>
+            </Card>
+          </BasicModal>
         ))}
-      </ul>
+      </SimpleGrid>
     </div>
   );
 }

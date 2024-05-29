@@ -12,6 +12,10 @@
 - Flow data through to the right bits of UI.
 - Add modal with the right data subset.
 
+### May 29: 13:45 - 14:15
+
+- Lay the components out in a reasonable way.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

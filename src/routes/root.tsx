@@ -1,11 +1,12 @@
 import { Link, Outlet } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
-import { Card, Text, CardBody } from "@chakra-ui/react";
+import { Flex, Center, Box } from "@chakra-ui/react";
 type Menu = {
   identifier: string;
   name: string;
   label: string;
   photo: string;
+  sections: Section[];
 };
 const GET_MENUS = gql`
   query GetMenus {
@@ -16,21 +17,16 @@ const GET_MENUS = gql`
       sections {
         label
         identifier
-        items {
-          label
-          identifier
-          modifierGroups {
-            label
-            modifiers {
-              priceOverride
-              displayOrder
-            }
-          }
-        }
       }
     }
   }
 `;
+
+type Section = {
+  label: string;
+  identifier: string;
+};
+
 export default function Root() {
   const { loading, error, data } = useQuery(GET_MENUS);
 
@@ -38,43 +34,31 @@ export default function Root() {
   if (error) return <p>Error : {error.message}</p>;
 
   return (
-    <>
-      <div id="sidebar">
-        <h1>Menus</h1>
-        <div>
-          <form id="search-form" role="search">
-            <input
-              id="q"
-              aria-label="Search contacts"
-              placeholder="Search"
-              type="search"
-              name="q"
-            />
-            <div id="search-spinner" aria-hidden hidden={true} />
-            <div className="sr-only" aria-live="polite"></div>
-          </form>
-          <form method="post">
-            <button type="submit">New</button>
-          </form>
-        </div>
-        <nav>
-          <ul>
-            {data.menus.map((menu: Menu) => (
-              <li key={menu.identifier}>
-                <Link to={`/menus/${menu.identifier}`}>{menu.label}</Link>
-              </li>
-            ))}
-          </ul>
-          <Card>
-            <CardBody>
-              <Text>text inside a card.</Text>
-            </CardBody>
-          </Card>
-        </nav>
-      </div>
-      <div id="detail">
-        <Outlet />
-      </div>
-    </>
+    <Box w={1080}>
+      <Flex color="white" flexGrow={1}>
+        <Center w="300px" bg="green.500">
+          <nav>
+            <ul>
+              {data.menus.map((menu: Menu) => (
+                <>
+                  {menu.sections.map((section: Section) => {
+                    return (
+                      <li key={section.identifier}>
+                        <Link to={`/sections/${section.identifier}`}>
+                          {menu.label} / {section.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </>
+              ))}
+            </ul>
+          </nav>
+        </Center>
+        <Box flex="1" bg="tomato">
+          <Outlet />
+        </Box>
+      </Flex>
+    </Box>
   );
 }
