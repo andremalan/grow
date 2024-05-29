@@ -13,7 +13,7 @@ import {
   gql,
 } from "@apollo/client";
 const client = new ApolloClient({
-  uri: "https://flyby-router-demo.herokuapp.com/",
+  uri: "http://localhost:3000/graphql/",
   cache: new InMemoryCache(),
 });
 

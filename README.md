@@ -1,10 +1,16 @@
 # Worklog
 
-### May 27: 8:05-9:05
+### May 27: 20:05-21:05
 
 - Vite init
 - Add repo
 - Connect React Router, Apollo, Chakra UI and Framer with UI to show them all working
+
+### May 29: 12:30 - 13:00
+
+- Connect to dev version of seed graphQL Query.
+- Flow data through to the right bits of UI.
+- Add modal with the right data subset.
 
 # React + TypeScript + Vite
 

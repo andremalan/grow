@@ -1,24 +1,38 @@
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
 import { Card, Text, CardBody } from "@chakra-ui/react";
-type Location = {
-  id: string;
+type Menu = {
+  identifier: string;
   name: string;
-  description: string;
+  label: string;
   photo: string;
 };
-const GET_LOCATIONS = gql`
-  query GetLocations {
-    locations {
-      id
-      name
-      description
-      photo
+const GET_MENUS = gql`
+  query GetMenus {
+    menus {
+      identifier
+      label
+      state
+      sections {
+        label
+        identifier
+        items {
+          label
+          identifier
+          modifierGroups {
+            label
+            modifiers {
+              priceOverride
+              displayOrder
+            }
+          }
+        }
+      }
     }
   }
 `;
 export default function Root() {
-  const { loading, error, data } = useQuery(GET_LOCATIONS);
+  const { loading, error, data } = useQuery(GET_MENUS);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
@@ -26,7 +40,7 @@ export default function Root() {
   return (
     <>
       <div id="sidebar">
-        <h1>React Router Contacts</h1>
+        <h1>Menus</h1>
         <div>
           <form id="search-form" role="search">
             <input
@@ -45,25 +59,15 @@ export default function Root() {
         </div>
         <nav>
           <ul>
-            <li>
-              <a href={`/contacts/1`}>Your Name</a>
-            </li>
-            <li>
-              <a href={`/contacts/2`}>Your Friend</a>
-            </li>
-          </ul>
-          <ul>
-            {data.locations.map((location: Location) => (
-              <li key={location.id}>
-                <a href={`/menus/${location.id}`}>{location.name}</a>
+            {data.menus.map((menu: Menu) => (
+              <li key={menu.identifier}>
+                <Link to={`/menus/${menu.identifier}`}>{menu.label}</Link>
               </li>
             ))}
           </ul>
           <Card>
             <CardBody>
-              <Text>
-                View a summary of all your customers over the last month.
-              </Text>
+              <Text>text inside a card.</Text>
             </CardBody>
           </Card>
         </nav>
