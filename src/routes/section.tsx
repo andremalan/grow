@@ -6,12 +6,12 @@ import {
   Card,
   CardBody,
   Heading,
-  Select,
   Text,
   useDisclosure,
   Image,
   Flex,
   VStack,
+  CardFooter,
 } from "@chakra-ui/react";
 import {
   Modal,
@@ -24,6 +24,10 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useContext, useState } from "react";
+import { CartContext, CartItem } from "../components/cart";
+import { ModifierSelector } from "../components/modifierGroup";
+import { formatPrice } from "../utils/formatPrice";
 
 const GET_SECTION = gql`
   query GetSection($sectionId: ID!) {
@@ -35,6 +39,7 @@ const GET_SECTION = gql`
         label
         identifier
         available
+        price
         img
         description
         modifierGroups {
@@ -44,6 +49,8 @@ const GET_SECTION = gql`
             displayOrder
             item {
               label
+              price
+              identifier
             }
           }
         }
@@ -58,6 +65,8 @@ type Modifier = {
   label: string;
   item: {
     label: string;
+    identifier: string;
+    price: number;
   };
 };
 
@@ -65,11 +74,12 @@ type Item = {
   label: string;
   identifier: string;
   description: string;
+  price: number;
   img: string;
   available: boolean;
   modifierGroups: ModifierGroup[];
 };
-type ModifierGroup = {
+export type ModifierGroup = {
   label: string;
   modifiers: Modifier[];
 };
@@ -85,6 +95,23 @@ const ItemModal: React.FC<{ item: Item; children: React.ReactNode }> = ({
   children,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { addItems } = useContext(CartContext);
+  const [selectedModifiers, setSelectedModifiers] = useState<CartItem[]>([]);
+
+  const { identifier, label, price } = item;
+  const cartItem = { identifier, label, price };
+  const addModifier = (item: CartItem) => {
+    setSelectedModifiers([...selectedModifiers, item]);
+  };
+  const closeModal = () => {
+    setSelectedModifiers([]);
+    onClose();
+  };
+
+  const addToCart = () => {
+    addItems([cartItem, ...selectedModifiers]);
+    closeModal();
+  };
   return (
     <>
       <Box
@@ -94,7 +121,7 @@ const ItemModal: React.FC<{ item: Item; children: React.ReactNode }> = ({
         {children}
       </Box>
 
-      <Modal size="xl" isOpen={isOpen} onClose={onClose}>
+      <Modal size="xl" isOpen={isOpen} onClose={closeModal}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{item.label}</ModalHeader>
@@ -119,7 +146,10 @@ const ItemModal: React.FC<{ item: Item; children: React.ReactNode }> = ({
                     <VStack alignItems={"flex-start"}>
                       {item.modifierGroups.map((group) => (
                         <Box key={group.label}>
-                          <ModifierGroup modifierGroup={group} />
+                          <ModifierSelector
+                            modifierGroup={group}
+                            onSelect={addModifier}
+                          />
                         </Box>
                       ))}
                     </VStack>
@@ -129,11 +159,15 @@ const ItemModal: React.FC<{ item: Item; children: React.ReactNode }> = ({
             </AnimatePresence>
           </ModalBody>
 
-          <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
-              Close
+          <ModalFooter
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Box>{formatPrice(item.price)}</Box>
+            <Button colorScheme="blue" mr={3} onClick={addToCart}>
+              Add to cart
             </Button>
-            <Button variant="ghost">Secondary Action</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -141,33 +175,17 @@ const ItemModal: React.FC<{ item: Item; children: React.ReactNode }> = ({
   );
 };
 
-const ModifierGroup: React.FC<{ modifierGroup: ModifierGroup }> = ({
-  modifierGroup,
-}) => {
-  return (
-    <div>
-      <Text>{modifierGroup.label}</Text>
-      <Select placeholder="Select modifier">
-        {modifierGroup.modifiers.map((modifier, index) => (
-          <option value={modifier.displayOrder} key={index}>
-            {`${modifier.item.label}: $${(
-              Number(modifier.priceOverride) / 100
-            ).toFixed(2)}`}
-          </option>
-        ))}
-      </Select>
-    </div>
-  );
-};
-
 function ItemCard({ item }: { item: Item }) {
+  const { addItems } = useContext(CartContext);
+  const { identifier, label, price } = item;
+  const cartItem = { identifier, label, price };
   return (
-    <ItemModal key={item.identifier} item={item}>
-      <Card
-        opacity={item.available ? 1 : "0.5"}
-        pointerEvents={item.available ? "auto" : "none"}
-      >
-        <CardBody>
+    <Card
+      opacity={item.available ? 1 : "0.5"}
+      pointerEvents={item.available ? "auto" : "none"}
+    >
+      <CardBody>
+        <ItemModal key={item.identifier} item={item}>
           <Heading as="h3" size="md">
             {item.label}
           </Heading>
@@ -179,9 +197,17 @@ function ItemCard({ item }: { item: Item }) {
             src={item.img}
             alt={item.label}
           />
-        </CardBody>
-      </Card>
-    </ItemModal>
+        </ItemModal>
+      </CardBody>
+      <CardFooter
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+      >
+        <Button onClick={() => addItems([cartItem])}>Add to cart</Button>
+        <Box>{formatPrice(item.price)}</Box>
+      </CardFooter>
+    </Card>
   );
 }
 

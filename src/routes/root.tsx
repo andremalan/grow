@@ -1,6 +1,8 @@
 import { Link, Outlet } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
 import { Flex, Box, VStack } from "@chakra-ui/react";
+import { Cart, CartContext, CartItem } from "../components/cart";
+import { useState } from "react";
 type Menu = {
   identifier: string;
   name: string;
@@ -29,16 +31,21 @@ type Section = {
 
 export default function Root() {
   const { loading, error, data } = useQuery(GET_MENUS);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const updateCart = function (items: CartItem[]) {
+    setCart([...cart, ...items]);
+  };
+  console.log({ cart });
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
 
   return (
     <Box w={1500}>
-      <Flex color="white" flexGrow={1}>
-        <Box p="5" w="300px" bg="green.500">
-          <nav>
-            <ul>
+      <CartContext.Provider value={{ items: cart, addItems: updateCart }}>
+        <Flex color="white" flexGrow={1}>
+          <Box p="5" w="300px" bg="green.500">
+            <nav>
               {data.menus.map((menu: Menu) => (
                 <VStack key={menu.identifier}>
                   {menu.sections.map((section: Section) => {
@@ -52,13 +59,16 @@ export default function Root() {
                   })}
                 </VStack>
               ))}
-            </ul>
-          </nav>
-        </Box>
-        <Box flex="1" p="10">
-          <Outlet />
-        </Box>
-      </Flex>
+              <Box>
+                <Cart items={cart} />
+              </Box>
+            </nav>
+          </Box>
+          <Box flex="1" p="10">
+            <Outlet />
+          </Box>
+        </Flex>
+      </CartContext.Provider>
     </Box>
   );
 }

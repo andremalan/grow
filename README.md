@@ -20,6 +20,14 @@
 
 - Update seeds to add images and availability, implement those in front end.
 
+### May 30: 13:00 - 13:20
+
+- Add Framer Motion, deploy to Vercel, redeploy backend
+
+### May 30: 18:00 - 19:00
+
+- Working cart that can take items and modifiers
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
