@@ -1,6 +1,6 @@
 import { Link, Outlet } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
-import { Flex, Center, Box } from "@chakra-ui/react";
+import { Flex, Box, VStack } from "@chakra-ui/react";
 type Menu = {
   identifier: string;
   name: string;
@@ -34,28 +34,28 @@ export default function Root() {
   if (error) return <p>Error : {error.message}</p>;
 
   return (
-    <Box w={1080}>
+    <Box w={1500}>
       <Flex color="white" flexGrow={1}>
-        <Center w="300px" bg="green.500">
+        <Box p="5" w="300px" bg="green.500">
           <nav>
             <ul>
               {data.menus.map((menu: Menu) => (
-                <>
+                <VStack key={menu.identifier}>
                   {menu.sections.map((section: Section) => {
                     return (
-                      <li key={section.identifier}>
+                      <Box key={section.identifier}>
                         <Link to={`/sections/${section.identifier}`}>
                           {menu.label} / {section.label}
                         </Link>
-                      </li>
+                      </Box>
                     );
                   })}
-                </>
+                </VStack>
               ))}
             </ul>
           </nav>
-        </Center>
-        <Box flex="1" bg="tomato">
+        </Box>
+        <Box flex="1" p="10">
           <Outlet />
         </Box>
       </Flex>

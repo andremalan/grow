@@ -9,6 +9,9 @@ import {
   Select,
   Text,
   useDisclosure,
+  Image,
+  Flex,
+  VStack,
 } from "@chakra-ui/react";
 import {
   Modal,
@@ -25,16 +28,22 @@ const GET_SECTION = gql`
   query GetSection($sectionId: ID!) {
     section(identifier: $sectionId) {
       identifier
+      available
       label
       items {
         label
         identifier
+        available
+        img
         description
         modifierGroups {
           label
           modifiers {
             priceOverride
             displayOrder
+            item {
+              label
+            }
           }
         }
       }
@@ -45,12 +54,18 @@ const GET_SECTION = gql`
 type Modifier = {
   priceOverride: number;
   displayOrder: number;
+  label: string;
+  item: {
+    label: string;
+  };
 };
 
 type Item = {
   label: string;
   identifier: string;
   description: string;
+  img: string;
+  available: boolean;
   modifierGroups: ModifierGroup[];
 };
 type ModifierGroup = {
@@ -64,31 +79,45 @@ type Section = {
   items: Item[];
 };
 
-const BasicModal: React.FC<{ item: Item; children: React.ReactNode }> = ({
+const ItemModal: React.FC<{ item: Item; children: React.ReactNode }> = ({
   item,
   children,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Box cursor="pointer" onClick={onOpen}>
+      <Box
+        cursor={item.available ? "pointer" : "arrow"}
+        onClick={item.available ? onOpen : undefined}
+      >
         {children}
       </Box>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal size="xl" isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{item.label}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text>{item.description}</Text>
-            <ul>
-              {item.modifierGroups.map((group) => (
-                <li key={group.label}>
-                  <ModifierGroup modifierGroup={group} />
-                </li>
-              ))}
-            </ul>
+            <Flex>
+              <Image
+                boxSize="250px"
+                objectFit="cover"
+                src={item.img}
+                alt={item.label}
+                mr="5"
+              />
+              <Box>
+                <Text>{item.description}</Text>
+                <VStack alignItems={"flex-start"}>
+                  {item.modifierGroups.map((group) => (
+                    <Box key={group.label}>
+                      <ModifierGroup modifierGroup={group} />
+                    </Box>
+                  ))}
+                </VStack>
+              </Box>
+            </Flex>
           </ModalBody>
 
           <ModalFooter>
@@ -112,13 +141,41 @@ const ModifierGroup: React.FC<{ modifierGroup: ModifierGroup }> = ({
       <Select placeholder="Select modifier">
         {modifierGroup.modifiers.map((modifier, index) => (
           <option value={modifier.displayOrder} key={index}>
-            {`Price: ${modifier.priceOverride}, Order: ${modifier.displayOrder}`}
+            {`${modifier.item.label}: $${(
+              Number(modifier.priceOverride) / 100
+            ).toFixed(2)}`}
           </option>
         ))}
       </Select>
     </div>
   );
 };
+
+function ItemCard({ item }: { item: Item }) {
+  return (
+    <ItemModal key={item.identifier} item={item}>
+      <Card
+        opacity={item.available ? 1 : "0.5"}
+        pointerEvents={item.available ? "auto" : "none"}
+      >
+        <CardBody>
+          <Heading as="h3" size="md">
+            {item.label}
+          </Heading>
+          <Text noOfLines={1}>{item.description}</Text>
+          <Image
+            width={280}
+            h={150}
+            objectFit="cover"
+            src={item.img}
+            alt={item.label}
+          />
+        </CardBody>
+      </Card>
+    </ItemModal>
+  );
+}
+
 export default function Section() {
   const { sectionId } = useParams();
   const { loading, error, data } = useQuery(GET_SECTION, {
@@ -128,23 +185,19 @@ export default function Section() {
   if (error) return <p>Error : {error.message}</p>;
 
   return (
-    <div id="section">
+    <Box
+      id="section"
+      opacity={data.section.available ? 1 : 0.5}
+      pointerEvents={data.section.available ? "auto" : "none"}
+    >
       <Text>{data.section.label}</Text>
-      <SimpleGrid minChildWidth="120px" spacing="40px">
+      <Text>{data.section.available ? "Available" : "Not available"}</Text>
+      <SimpleGrid minChildWidth="300px" spacing="40px">
         {data.section.items.map((item: Item) => (
-          <BasicModal key={item.identifier} item={item}>
-            <Card height="180px">
-              <CardBody>
-                <Heading as="h3" size="md">
-                  {item.label}
-                </Heading>
-                <Text noOfLines={1}>{item.description}</Text>
-              </CardBody>
-            </Card>
-          </BasicModal>
+          <ItemCard key={item.identifier} item={item} />
         ))}
       </SimpleGrid>
-    </div>
+    </Box>
   );
 }
 
