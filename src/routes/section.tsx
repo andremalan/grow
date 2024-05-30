@@ -23,6 +23,7 @@ import {
   ModalCloseButton,
   SimpleGrid,
 } from "@chakra-ui/react";
+import { AnimatePresence, motion } from "framer-motion";
 
 const GET_SECTION = gql`
   query GetSection($sectionId: ID!) {
@@ -99,25 +100,33 @@ const ItemModal: React.FC<{ item: Item; children: React.ReactNode }> = ({
           <ModalHeader>{item.label}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Flex>
-              <Image
-                boxSize="250px"
-                objectFit="cover"
-                src={item.img}
-                alt={item.label}
-                mr="5"
-              />
-              <Box>
-                <Text>{item.description}</Text>
-                <VStack alignItems={"flex-start"}>
-                  {item.modifierGroups.map((group) => (
-                    <Box key={group.label}>
-                      <ModifierGroup modifierGroup={group} />
-                    </Box>
-                  ))}
-                </VStack>
-              </Box>
-            </Flex>
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 2 }}
+              >
+                <Flex>
+                  <Image
+                    boxSize="250px"
+                    objectFit="cover"
+                    src={item.img}
+                    alt={item.label}
+                    mr="5"
+                  />
+                  <Box>
+                    <Text>{item.description}</Text>
+                    <VStack alignItems={"flex-start"}>
+                      {item.modifierGroups.map((group) => (
+                        <Box key={group.label}>
+                          <ModifierGroup modifierGroup={group} />
+                        </Box>
+                      ))}
+                    </VStack>
+                  </Box>
+                </Flex>
+              </motion.div>
+            </AnimatePresence>
           </ModalBody>
 
           <ModalFooter>
