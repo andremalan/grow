@@ -1,8 +1,8 @@
 import { Link, Outlet } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
 import { Flex, Box, VStack } from "@chakra-ui/react";
-import { Cart, CartContext, CartItem } from "../components/cart";
-import { useState } from "react";
+import { Cart, CartContext } from "../components/cart";
+import { useCartState } from "../hooks/useCartState";
 type Menu = {
   identifier: string;
   name: string;
@@ -31,11 +31,7 @@ type Section = {
 
 export default function Root() {
   const { loading, error, data } = useQuery(GET_MENUS);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const updateCart = function (items: CartItem[]) {
-    setCart([...cart, ...items]);
-  };
-  console.log({ cart });
+  const { cart, updateCart } = useCartState();
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;

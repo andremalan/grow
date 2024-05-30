@@ -20,13 +20,17 @@
 
 - Update seeds to add images and availability, implement those in front end.
 
-### May 30: 13:00 - 13:20
+### May 30: 13:00 - 13:20 // 4
 
 - Add Framer Motion, deploy to Vercel, redeploy backend
 
-### May 30: 18:00 - 19:00
+### May 30: 18:00 - 19:00 // 5
 
 - Working cart that can take items and modifiers
+
+### May 30: 19:20 - 19:50 // 5.5
+
+- Calculate quantities and totals in cart
 
 # React + TypeScript + Vite
 
