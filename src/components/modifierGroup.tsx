@@ -1,7 +1,7 @@
 import { Text, Select } from "@chakra-ui/react";
-import type { ModifierGroup } from "../routes/section";
 import { CartItem } from "./cart";
 import { formatPrice } from "../utils/formatPrice";
+import { ModifierGroup } from "../graphql/queries";
 
 export const ModifierSelector: React.FC<{
   modifierGroup: ModifierGroup;

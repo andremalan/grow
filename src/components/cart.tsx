@@ -1,29 +1,20 @@
 import { Box, Button, HStack, VStack } from "@chakra-ui/react";
-import { createContext } from "react";
 import { formatPrice } from "../utils/formatPrice";
 import { useMutation } from "@apollo/client";
 import { CREATE_CHECKOUT_SESSION } from "../graphql/mutations";
+import { useCartContext } from "../hooks/useCartContext";
 export type CartItem = {
   identifier: string;
   label: string;
   price: number;
 };
-type CartContextType = {
-  items: { item: CartItem; quantity: number }[];
-  addItems: (items: CartItem[]) => void;
-};
-export const CartContext = createContext<CartContextType>({
-  items: [],
-  addItems: () => {},
-});
 
-export type CartElement = { item: CartItem; quantity: number };
-
-export function Cart({ items }: { items: CartElement[] }) {
+export function Cart() {
   const [createCheckoutSession, { data, loading, error }] = useMutation(
     CREATE_CHECKOUT_SESSION
   );
 
+  const { items } = useCartContext();
   const lineItems = items.map((item) => ({
     price: item.item.price,
     quantity: item.quantity,

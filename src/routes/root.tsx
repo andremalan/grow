@@ -1,50 +1,25 @@
 import { Link, Outlet } from "react-router-dom";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { Flex, Box, VStack } from "@chakra-ui/react";
-import { Cart, CartContext } from "../components/cart";
-import { useCartState } from "../hooks/useCartState";
-type Menu = {
-  identifier: string;
-  name: string;
-  label: string;
-  photo: string;
-  sections: Section[];
-};
-const GET_MENUS = gql`
-  query GetMenus {
-    menus {
-      identifier
-      label
-      state
-      sections {
-        label
-        identifier
-      }
-    }
-  }
-`;
-
-type Section = {
-  label: string;
-  identifier: string;
-};
+import { Cart } from "../components/cart";
+import { GET_MENUS, Menu, MenuSection } from "../graphql/queries";
+import CartContextProvider from "../contexts/cartContextProvider";
 
 export default function Root() {
   const { loading, error, data } = useQuery(GET_MENUS);
-  const { cart, updateCart } = useCartState();
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
 
   return (
     <Box w={1500}>
-      <CartContext.Provider value={{ items: cart, addItems: updateCart }}>
+      <CartContextProvider>
         <Flex color="white" flexGrow={1}>
           <Box p="5" w="300px" bg="green.500">
             <nav>
               {data.menus.map((menu: Menu) => (
                 <VStack key={menu.identifier}>
-                  {menu.sections.map((section: Section) => {
+                  {menu.sections.map((section: MenuSection) => {
                     return (
                       <Box key={section.identifier}>
                         <Link to={`/sections/${section.identifier}`}>
@@ -56,7 +31,7 @@ export default function Root() {
                 </VStack>
               ))}
               <Box>
-                <Cart items={cart} />
+                <Cart />
               </Box>
             </nav>
           </Box>
@@ -64,7 +39,7 @@ export default function Root() {
             <Outlet />
           </Box>
         </Flex>
-      </CartContext.Provider>
+      </CartContextProvider>
     </Box>
   );
 }
