@@ -7,6 +7,7 @@ import ErrorPage from "./error-page";
 import Menu from "./routes/section";
 import { ChakraProvider } from "@chakra-ui/react";
 import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
+import Success from "./routes/success";
 const client = new ApolloClient({
   uri: import.meta.env.VITE_GRAPHQL_URL,
   cache: new InMemoryCache(),
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
       {
         path: "/sections/:sectionId",
         element: <Menu />,
+      },
+      {
+        path: "/success",
+        element: <Success />,
       },
     ],
   },

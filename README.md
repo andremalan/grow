@@ -32,6 +32,10 @@
 
 - Calculate quantities and totals in cart
 
+### May 31: 12:30 - 14:00 // 7
+
+- Implement checkout functionality by calling mutation.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

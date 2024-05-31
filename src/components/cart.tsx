@@ -1,6 +1,8 @@
 import { Box, Button, HStack, VStack } from "@chakra-ui/react";
 import { createContext } from "react";
 import { formatPrice } from "../utils/formatPrice";
+import { useMutation } from "@apollo/client";
+import { CREATE_CHECKOUT_SESSION } from "../graphql/mutations";
 export type CartItem = {
   identifier: string;
   label: string;
@@ -18,6 +20,40 @@ export const CartContext = createContext<CartContextType>({
 export type CartElement = { item: CartItem; quantity: number };
 
 export function Cart({ items }: { items: CartElement[] }) {
+  const [createCheckoutSession, { data, loading, error }] = useMutation(
+    CREATE_CHECKOUT_SESSION
+  );
+
+  const lineItems = items.map((item) => ({
+    price: item.item.price,
+    quantity: item.quantity,
+    label: item.item.label,
+  }));
+
+  const handleCheckout = async () => {
+    const currentUrl = window.location.href;
+    const successUrl = `${window.location.origin}/success`;
+    const cancelUrl = currentUrl;
+
+    try {
+      const { data } = await createCheckoutSession({
+        variables: {
+          lineItems,
+          successUrl,
+          cancelUrl,
+        },
+      });
+
+      if (data?.createCheckoutSession?.url) {
+        window.location.href = data.createCheckoutSession.url;
+      }
+    } catch (err) {
+      console.error("Error creating checkout session:", err);
+    }
+  };
+  if (data) return <button disabled>Redirecting...</button>;
+  if (loading) return <button disabled>Loading...</button>;
+  if (error) return <button disabled>Error</button>;
   return (
     <Box>
       <h1>Cart</h1>
@@ -41,7 +77,7 @@ export function Cart({ items }: { items: CartElement[] }) {
                 )
               )}
             </Box>
-            <Button>Checkout</Button>
+            <Button onClick={handleCheckout}>Checkout</Button>
           </>
         )}
       </VStack>
